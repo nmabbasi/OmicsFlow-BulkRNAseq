@@ -1,0 +1,21 @@
+import pandas as pd
+
+configfile: "config/config.yaml"
+
+SAMPLES = pd.read_csv(config["samplesheet"]).set_index("sample", drop=False)
+SAMPLE_NAMES = SAMPLES.index.tolist()
+
+rule all:
+    input:
+        expand(f"{config['outdir']}/qc/fastqc/{{sample}}_fastqc.zip", sample=SAMPLE_NAMES),
+        expand(f"{config['outdir']}/trimming/{{sample}}_1.trimmed.fq.gz", sample=SAMPLE_NAMES),
+        expand(f"{config['outdir']}/trimming/{{sample}}_2.trimmed.fq.gz", sample=SAMPLE_NAMES),
+        expand(f"{config['outdir']}/mapping/{{sample}}.sorted.bam.bai", sample=SAMPLE_NAMES),
+        f"{config['outdir']}/quantification/counts.txt",
+        f"{config['outdir']}/multiqc/multiqc_report.html"
+
+include: "rules/fastqc.smk"
+include: "rules/fastp.smk"
+include: "rules/hisat2.smk"
+include: "rules/featurecounts.smk"
+include: "rules/multiqc.smk"

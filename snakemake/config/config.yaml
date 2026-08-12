@@ -1,0 +1,15 @@
+samplesheet: "config/samplesheet.csv"
+outdir: "results"
+
+# References
+hisat2_index: "/path/to/hisat2_index"
+gtf_file: "/path/to/annotation.gtf"
+
+# Fastp options
+fastp:
+  min_length: 30
+
+# featureCounts options
+featurecounts:
+  feature_type: "exon"
+  attribute_type: "gene_id"

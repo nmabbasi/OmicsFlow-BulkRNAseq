@@ -1,0 +1,12 @@
+name: omicsflow-bulk
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - fastqc
+  - fastp
+  - hisat2
+  - samtools
+  - subread
+  - multiqc

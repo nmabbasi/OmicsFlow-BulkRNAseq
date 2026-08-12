@@ -1,0 +1,3 @@
+sample,fastq_1,fastq_2,condition
+Sample1,/data/Sample1_R1.fastq.gz,/data/Sample1_R2.fastq.gz,control
+Sample2,/data/Sample2_R1.fastq.gz,/data/Sample2_R2.fastq.gz,treated
