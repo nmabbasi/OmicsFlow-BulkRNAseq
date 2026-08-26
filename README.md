@@ -64,5 +64,5 @@ OmicsFlow-BulkRNAseq/
 
 If you use this pipeline, please cite the tools used in your methods section (fastp, HISAT2, featureCounts, MultiQC).
 
-**Author:** Nasir Mahmood Abbasi, PhD  
+**Author:** Nasir Mahmood Abbasi  
 **GitHub:** [@nmabbasi](https://github.com/nmabbasi)
