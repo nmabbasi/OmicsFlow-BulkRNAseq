@@ -10,7 +10,7 @@ From raw FASTQ files → QC → Trimming → Mapping → Quantification → Mult
 
 ---
 
-## 📋 What Does This Pipeline Do?
+## Pipeline Overview
 
 This repository provides two complete, parallel implementations of the same bulk RNA-seq workflow:
 
@@ -24,45 +24,62 @@ This repository provides two complete, parallel implementations of the same bulk
 
 ---
 
-## 🗂️ Repository Structure
+## Repository Structure
 
 ```
 OmicsFlow-BulkRNAseq/
-├── nextflow/               ← Nextflow DSL2 pipeline
-│   ├── main.nf             ← Main pipeline entry point
-│   ├── nextflow.config     ← All parameters & SLURM config
-│   ├── modules/            ← One module per analysis step
-│   └── envs/               ← Conda environment file
+├── nextflow/               # Nextflow DSL2 pipeline
+│   ├── main.nf             # Main pipeline entry point
+│   ├── nextflow.config     # All parameters & SLURM config
+│   ├── modules/            # One module per analysis step
+│   └── envs/               # Conda environment file
 │
-├── snakemake/              ← Snakemake pipeline
-│   ├── Snakefile           ← Main pipeline entry point
-│   ├── config/             ← Configuration and sample sheets
-│   ├── rules/              ← One rule file per analysis step
-│   └── envs/               ← Conda environment file
+├── snakemake/              # Snakemake pipeline
+│   ├── Snakefile           # Main pipeline entry point
+│   ├── config/             # Configuration and sample sheets
+│   ├── rules/              # One rule file per analysis step
+│   └── envs/               # Conda environment file
 │
-└── legacy_scripts/         ← Original bash scripts
+└── legacy_scripts/         # Original bash scripts for reference
 ```
 
 ---
 
-## 🚀 Quick Start — Choose Your Pipeline
+## Quick Start: Running the Workflows
 
-- **Nextflow** → See [docs/README_NEXTFLOW.md](docs/README_NEXTFLOW.md)
-- **Snakemake** → See [docs/README_SNAKEMAKE.md](docs/README_SNAKEMAKE.md)
+### Option A: Nextflow (DSL2)
+
+Run on an HPC cluster with SLURM and Conda:
+```bash
+cd nextflow
+nextflow run main.nf -profile slurm,conda --reads "../data/*_{1,2}.fastq.gz"
+```
+For detailed configuration options and test profiles, see [docs/README_NEXTFLOW.md](docs/README_NEXTFLOW.md).
+
+### Option B: Snakemake
+
+Run on an HPC cluster with Conda:
+```bash
+cd snakemake
+snakemake -s Snakefile --use-conda --profile slurm -j 20
+```
+For sample sheet definitions and rule customization, see [docs/README_SNAKEMAKE.md](docs/README_SNAKEMAKE.md).
 
 ---
 
-## 💡 Key Features
+## Key Features
 
-- **Multi-sample parallel processing** — all samples run simultaneously on SLURM
-- **Reproducible environments** — fully integrated with Conda/Mamba
-- **Legacy Support** — the original bash scripts are preserved in `legacy_scripts/` for reference
+- **Multi-sample parallel processing**: all samples dispatch concurrently through SLURM job arrays.
+- **Reproducible environments**: isolated Conda and Mamba environments for each pipeline tool.
+- **Legacy script reference**: original standalone bash scripts are preserved under `legacy_scripts/`.
 
 ---
 
-## 📧 Citation & Contact
+## Citation & Contact
 
-If you use this pipeline, please cite the tools used in your methods section (fastp, HISAT2, featureCounts, MultiQC).
+If you use this pipeline, please cite the underlying tools (fastp, HISAT2, featureCounts, MultiQC).
 
-**Author:** Nasir Mahmood Abbasi  
-**GitHub:** [@nmabbasi](https://github.com/nmabbasi)
+**Author:** Nasir Mahmood Abbasi, PhD  
+- Portfolio: [nmabbasi.github.io](https://nmabbasi.github.io/)  
+- HPC Guide: [nmabbasi.github.io/HPC](https://nmabbasi.github.io/HPC/)  
+- GitHub: [@nmabbasi](https://github.com/nmabbasi)
