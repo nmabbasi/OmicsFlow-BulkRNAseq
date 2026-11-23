@@ -2,6 +2,7 @@ samplesheet: "config/samplesheet.csv"
 outdir: "results"
 
 # References
+# hisat2_index is the index prefix (e.g. /path/to/grch38/genome where genome.1.ht2 exists)
 hisat2_index: "/path/to/hisat2_index"
 gtf_file: "/path/to/annotation.gtf"
 
@@ -10,6 +11,8 @@ fastp:
   min_length: 30
 
 # featureCounts options
+# strandedness: 0 = unstranded, 1 = forward stranded, 2 = reverse stranded
 featurecounts:
   feature_type: "exon"
   attribute_type: "gene_id"
+  strandedness: 0

@@ -13,12 +13,19 @@ process FASTP {
 
     script:
     """
-    fastp \\
-        -i ${fq1} -I ${fq2} \\
-        -o ${sample}_1.trimmed.fq.gz -O ${sample}_2.trimmed.fq.gz \\
-        -j ${sample}_fastp.json \\
-        -h ${sample}_fastp.html \\
-        -w ${task.cpus} \\
+    set -euo pipefail
+    fastp \
+        -i ${fq1} -I ${fq2} \
+        -o ${sample}_1.trimmed.fq.gz -O ${sample}_2.trimmed.fq.gz \
+        -j ${sample}_fastp.json \
+        -h ${sample}_fastp.html \
+        -w ${task.cpus} \
         --length_required ${params.trim_min_length}
+    """
+
+    stub:
+    """
+    touch ${sample}_1.trimmed.fq.gz ${sample}_2.trimmed.fq.gz
+    touch ${sample}_fastp.json ${sample}_fastp.html
     """
 }

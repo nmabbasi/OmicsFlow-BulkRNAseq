@@ -7,18 +7,25 @@ process FEATURECOUNTS {
     path gtf_file
 
     output:
-    path "counts.txt", emit: counts
+    path "counts.txt",         emit: counts
     path "counts.txt.summary", emit: summary
 
     script:
     """
-    featureCounts \\
-        -T ${task.cpus} \\
-        -p \\
-        -t ${params.fc_feature_type} \\
-        -g ${params.fc_attribute_type} \\
-        -a ${gtf_file} \\
-        -o counts.txt \\
+    set -euo pipefail
+    featureCounts \
+        -T ${task.cpus} \
+        -p --countReadPairs \
+        -s ${params.fc_strandedness} \
+        -t ${params.fc_feature_type} \
+        -g ${params.fc_attribute_type} \
+        -a ${gtf_file} \
+        -o counts.txt \
         ${bam_files}
+    """
+
+    stub:
+    """
+    touch counts.txt counts.txt.summary
     """
 }

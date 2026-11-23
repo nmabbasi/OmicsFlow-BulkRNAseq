@@ -1,17 +1,30 @@
 rule fastqc:
     input:
-        fq1 = lambda wildcards: SAMPLES.loc[wildcards.sample, "fastq_1"],
-        fq2 = lambda wildcards: SAMPLES.loc[wildcards.sample, "fastq_2"]
+        fq=lambda wildcards: SAMPLES.loc[wildcards.sample, f"fastq_{wildcards.read}"],
     output:
-        html = f"{config['outdir']}/qc/fastqc/{{sample}}_fastqc.html",
-        zip = f"{config['outdir']}/qc/fastqc/{{sample}}_fastqc.zip"
+        html=f"{OUTDIR}/qc/fastqc/{{sample}}_R{{read}}_fastqc.html",
+        zip=f"{OUTDIR}/qc/fastqc/{{sample}}_R{{read}}_fastqc.zip",
+    wildcard_constraints:
+        read="1|2",
+    log:
+        f"{OUTDIR}/logs/fastqc/{{sample}}_R{{read}}.log",
     conda:
         "../envs/omicsflow.yaml"
     threads: 2
     resources:
-        mem_mb = 4096,
-        time_min = 60
+        mem_mb=4096,
+        time_min=60,
     shell:
-        """
-        fastqc -t {threads} --outdir {config[outdir]}/qc/fastqc {input.fq1} {input.fq2}
+        r"""
+        set -euo pipefail
+        TMPD=$(mktemp -d)
+        trap 'rm -rf "$TMPD"' EXIT
+        case "{input.fq}" in
+            *.gz) EXT=.fastq.gz ;;
+            *)    EXT=.fastq ;;
+        esac
+        ln -s "$(realpath "{input.fq}")" "$TMPD/{wildcards.sample}_R{wildcards.read}$EXT"
+        fastqc -t {threads} --outdir "$TMPD" "$TMPD/{wildcards.sample}_R{wildcards.read}$EXT" > {log} 2>&1
+        mv "$TMPD/{wildcards.sample}_R{wildcards.read}_fastqc.html" {output.html}
+        mv "$TMPD/{wildcards.sample}_R{wildcards.read}_fastqc.zip" {output.zip}
         """

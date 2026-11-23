@@ -5,25 +5,33 @@ process HISAT2_MAPPING {
 
     input:
     tuple val(sample), path(fq1), path(fq2), val(condition)
-    path index_dir  // Directory or prefix
+    path index_files
 
     output:
-    path "${sample}.sorted.bam", emit: bam_files
-    path "${sample}.sorted.bam.bai", emit: bai_files
-    path "${sample}_hisat2.log", emit: hisat2_logs
+    path "${sample}.sorted.bam",         emit: bam_files
+    path "${sample}.sorted.bam.bai",     emit: bai_files
+    path "${sample}_hisat2.summary.txt", emit: hisat2_summary
 
     script:
+    def first_idx     = (index_files instanceof List) ? index_files[0] : index_files
+    def index_prefix  = first_idx.getFileName().toString().replaceAll(/\.\d+\.ht2l?$/, '')
+    def sort_threads  = task.cpus > 2 ? 2 : 1
+    def align_threads = task.cpus > 2 ? task.cpus - 2 : 1
     """
-    # Find the actual index prefix based on the provided path
-    # If the user provides /path/to/genome, HISAT2 uses /path/to/genome
-    
-    hisat2 -p ${task.cpus} \\
-        -x ${index_dir} \\
-        -1 ${fq1} -2 ${fq2} \\
-        2> ${sample}_hisat2.log | \\
-        samtools view -bS - | \\
-        samtools sort -@ ${task.cpus} -o ${sample}.sorted.bam -
-        
-    samtools index ${sample}.sorted.bam
+    set -euo pipefail
+    hisat2 -p ${align_threads} \
+        -x ${index_prefix} \
+        -1 ${fq1} -2 ${fq2} \
+        --new-summary --summary-file ${sample}_hisat2.summary.txt | \
+        samtools sort -@ ${sort_threads} -o ${sample}.sorted.bam -
+
+    samtools index -@ ${sort_threads} ${sample}.sorted.bam
+    """
+
+    stub:
+    """
+    touch ${sample}.sorted.bam
+    touch ${sample}.sorted.bam.bai
+    touch ${sample}_hisat2.summary.txt
     """
 }

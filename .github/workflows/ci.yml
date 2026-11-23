@@ -1,0 +1,71 @@
+name: Pipeline Validation CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  snakemake-validate:
+    name: Snakemake DAG Dry-Run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Snakemake and pandas
+        run: pip install snakemake pandas
+
+      - name: Create synthetic test fixtures
+        run: |
+          mkdir -p /tmp/ci_test/data /tmp/ci_test/ref
+          touch /tmp/ci_test/data/Sample1_R1.fastq.gz /tmp/ci_test/data/Sample1_R2.fastq.gz
+          touch /tmp/ci_test/data/Sample2_R1.fastq.gz /tmp/ci_test/data/Sample2_R2.fastq.gz
+          touch /tmp/ci_test/ref/genome.1.ht2 /tmp/ci_test/ref/genome.2.ht2
+          touch /tmp/ci_test/ref/annotation.gtf
+          printf "sample,fastq_1,fastq_2,condition\nSample1,/tmp/ci_test/data/Sample1_R1.fastq.gz,/tmp/ci_test/data/Sample1_R2.fastq.gz,control\nSample2,/tmp/ci_test/data/Sample2_R1.fastq.gz,/tmp/ci_test/data/Sample2_R2.fastq.gz,treated\n" > /tmp/ci_test/samplesheet.csv
+          printf "samplesheet: \"/tmp/ci_test/samplesheet.csv\"\noutdir: \"/tmp/ci_test/smk_results\"\nhisat2_index: \"/tmp/ci_test/ref/genome\"\ngtf_file: \"/tmp/ci_test/ref/annotation.gtf\"\nfastp:\n  min_length: 30\nfeaturecounts:\n  feature_type: \"exon\"\n  attribute_type: \"gene_id\"\n  strandedness: 0\n" > /tmp/ci_test/config.yaml
+
+      - name: Validate Snakemake DAG dry-run
+        run: |
+          cd snakemake
+          snakemake -s Snakefile --configfile /tmp/ci_test/config.yaml -n -p --cores 4
+
+  nextflow-validate:
+    name: Nextflow DSL2 Stub Run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v2
+        with:
+          version: "24.10.0"
+
+      - name: Create synthetic test fixtures
+        run: |
+          mkdir -p /tmp/ci_test/data /tmp/ci_test/ref
+          touch /tmp/ci_test/data/Sample1_R1.fastq.gz /tmp/ci_test/data/Sample1_R2.fastq.gz
+          touch /tmp/ci_test/data/Sample2_R1.fastq.gz /tmp/ci_test/data/Sample2_R2.fastq.gz
+          touch /tmp/ci_test/ref/genome.1.ht2 /tmp/ci_test/ref/genome.2.ht2
+          touch /tmp/ci_test/ref/annotation.gtf
+          printf "sample,fastq_1,fastq_2,condition\nSample1,/tmp/ci_test/data/Sample1_R1.fastq.gz,/tmp/ci_test/data/Sample1_R2.fastq.gz,control\nSample2,/tmp/ci_test/data/Sample2_R1.fastq.gz,/tmp/ci_test/data/Sample2_R2.fastq.gz,treated\n" > /tmp/ci_test/samplesheet.csv
+
+      - name: Run Nextflow DSL2 stub workflow
+        run: |
+          cd nextflow
+          nextflow run main.nf \
+            -profile local \
+            -stub-run \
+            --samplesheet /tmp/ci_test/samplesheet.csv \
+            --hisat2_index /tmp/ci_test/ref/genome \
+            --gtf_file /tmp/ci_test/ref/annotation.gtf \
+            --outdir /tmp/ci_test/nf_results
+          test -f /tmp/ci_test/nf_results/multiqc/multiqc_report.html

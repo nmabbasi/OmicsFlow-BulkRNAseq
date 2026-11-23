@@ -7,10 +7,17 @@ process MULTIQC {
 
     output:
     path "multiqc_report.html", emit: report
-    path "multiqc_data/", emit: data
+    path "multiqc_data/",       emit: data
 
     script:
     """
-    multiqc .
+    set -euo pipefail
+    multiqc --force .
+    """
+
+    stub:
+    """
+    mkdir -p multiqc_data
+    touch multiqc_report.html
     """
 }

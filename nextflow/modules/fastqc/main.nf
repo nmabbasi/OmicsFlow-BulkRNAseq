@@ -12,6 +12,13 @@ process FASTQC {
 
     script:
     """
+    set -euo pipefail
     fastqc -t ${task.cpus} ${fq1} ${fq2}
+    """
+
+    stub:
+    """
+    touch ${sample}_R1_fastqc.html ${sample}_R1_fastqc.zip
+    touch ${sample}_R2_fastqc.html ${sample}_R2_fastqc.zip
     """
 }
