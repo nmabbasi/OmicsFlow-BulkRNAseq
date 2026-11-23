@@ -64,6 +64,8 @@ jobs:
           nextflow run main.nf \
             -profile local \
             -stub-run \
+            --max_cpus 2 \
+            --max_memory 2.GB \
             --samplesheet /tmp/ci_test/samplesheet.csv \
             --hisat2_index /tmp/ci_test/ref/genome \
             --gtf_file /tmp/ci_test/ref/annotation.gtf \
