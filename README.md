@@ -52,9 +52,12 @@ OmicsFlow-BulkRNAseq/
 Run on an HPC cluster with SLURM and Conda:
 ```bash
 cd nextflow
-nextflow run main.nf -profile slurm,conda --reads "../data/*_{1,2}.fastq.gz"
+nextflow run main.nf -profile slurm,conda \
+  --samplesheet config/samplesheet_example.csv \
+  --hisat2_index /path/to/reference/genome \
+  --gtf_file /path/to/annotation.gtf
 ```
-For detailed configuration options and test profiles, see [docs/README_NEXTFLOW.md](docs/README_NEXTFLOW.md).
+For detailed configuration options and stub-run validation, see [docs/README_NEXTFLOW.md](docs/README_NEXTFLOW.md).
 
 ### Option B: Snakemake
 
@@ -70,7 +73,8 @@ For sample sheet definitions and rule customization, see [docs/README_SNAKEMAKE.
 ## Key Features
 
 - **Multi-sample parallel processing**: all samples dispatch concurrently through SLURM job arrays.
-- **Reproducible environments**: isolated Conda and Mamba environments for each pipeline tool.
+- **Reproducible environments**: pinned Conda/Bioconda environments for all pipeline tools.
+- **Automated CI validation**: GitHub Actions validates both the Snakemake DAG dry-run and Nextflow DSL2 stub workflow on every push and pull request.
 - **Legacy script reference**: original standalone bash scripts are preserved under `legacy_scripts/`.
 
 ---
